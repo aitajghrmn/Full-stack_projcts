@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Student MS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+  /* ── Reset & Variables ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0A0E1A;
+    --surface:   #111827;
+    --card:      #161D2E;
+    --border:    rgba(255,255,255,0.07);
+    --accent:    #00C9A7;
+    --accent2:   #4F8EF7;
+    --danger:    #FF5C7A;
+    --warn:      #FFB547;
+    --text:      #E8EDF5;
+    --muted:     #6B7A99;
+    --radius:    16px;
+    --shadow:    0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Background grid texture ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,201,167,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,201,167,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Glow orb ── */
+  body::after {
+    content: '';
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,201,167,0.08) 0%, transparent 70%);
+    top: -150px; right: -150px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Layout ── */
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 52px;
+    animation: fadeDown .6s ease both;
+  }
+
+  .logo-mark {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: grid; place-items: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 22px;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 20px rgba(0,201,167,0.35);
+  }
+
+  .header-text h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 28px;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .header-text p { color: var(--muted); font-size: 14px; margin-top: 3px; }
+
+  /* ── Stats bar ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+    animation: fadeUp .6s .1s ease both;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, border-color .2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); border-color: rgba(0,201,167,0.2); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .stat-card:hover::before { opacity: 1; }
+
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .stat-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 32px; margin-top: 6px; }
+  .stat-value.green  { color: var(--accent); }
+  .stat-value.blue   { color: var(--accent2); }
+  .stat-value.yellow { color: var(--warn); }
+
+  /* ── Main grid ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 780px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ── Panel (left sidebar) ── */
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    animation: fadeUp .6s .2s ease both;
+  }
+
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 13px;
+    text-transform: uppercase; letter-spacing: .1em;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  /* ── Form elements ── */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; letter-spacing: .04em; }
+
+  .field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+
+  .field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,201,167,0.12);
+  }
+
+  .field input::placeholder { color: var(--muted); }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 20px;
+    border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    transition: transform .15s, opacity .15s, box-shadow .15s;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #00A88D);
+    color: #fff;
+    width: 100%;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,201,167,0.25);
+  }
+  .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(0,201,167,0.4); }
+
+  .btn-blue {
+    background: linear-gradient(135deg, var(--accent2), #3A7AE4);
+    color: #fff;
+    width: 100%;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(79,142,247,0.25);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+  .btn-ghost:hover { border-color: var(--danger); color: var(--danger); }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 22px 0;
+  }
+
+  /* ── Student list panel (right) ── */
+  .list-panel {
+    animation: fadeUp .6s .3s ease both;
+  }
+
+  .list-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .list-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 18px;
+  }
+
+  /* ── Student card ── */
+  .student-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+    animation: slideIn .35s ease both;
+  }
+
+  .student-card:hover {
+    transform: translateX(4px);
+    border-color: rgba(0,201,167,0.2);
+    box-shadow: var(--shadow);
+  }
+
+  .card-top {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: grid; place-items: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .card-info { flex: 1; min-width: 0; }
+  .card-name { font-weight: 500; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-id   { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+  .card-avg {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .avg-number {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 22px;
+    color: var(--accent);
+  }
+  .avg-label { font-size: 11px; color: var(--muted); }
+
+  .card-grades {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 14px;
+  }
+
+  .grade-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .grade-chip.high   { border-color: rgba(0,201,167,0.3); color: var(--accent); }
+  .grade-chip.mid    { border-color: rgba(255,181,71,0.3); color: var(--warn); }
+  .grade-chip.low    { border-color: rgba(255,92,122,0.3); color: var(--danger); }
+
+  .card-actions {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .grade-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .grade-input:focus { border-color: var(--accent); }
+  .grade-input::placeholder { color: var(--muted); }
+
+  .btn-add-grade {
+    background: rgba(0,201,167,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(0,201,167,0.25);
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+  .btn-add-grade:hover { background: rgba(0,201,167,0.2); }
+
+  /* ── Trophy banner ── */
+  .trophy-banner {
+    background: linear-gradient(135deg, rgba(255,181,71,0.1), rgba(255,181,71,0.05));
+    border: 1px solid rgba(255,181,71,0.25);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 20px;
+  }
+  .trophy-banner .icon { font-size: 28px; }
+  .trophy-banner .tname { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--warn); }
+  .trophy-banner .tsub  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Empty state ── */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; line-height: 1.6; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 22px;
+    font-size: 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    z-index: 999;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+    opacity: 0;
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  #toast.success { border-color: rgba(0,201,167,0.4); color: var(--accent); }
+  #toast.error   { border-color: rgba(255,92,122,0.4); color: var(--danger); }
+
+  /* ── Animations ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-mark">S</div>
+    <div class="header-text">
+      <h1>Student Management</h1>
+      <p>Tələbə idarəetmə sistemi</p>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Cəmi tələbə</div>
+      <div class="stat-value green" id="stat-total">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Orta qiymət</div>
+      <div class="stat-value blue" id="stat-avg">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ən yüksək</div>
+      <div class="stat-value yellow" id="stat-top">—</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- Left panel -->
+    <aside class="panel">
+      <div class="panel-title">Yeni Tələbə</div>
+      <div class="field">
+        <label>Ad Soyad</label>
+        <input type="text" id="inp-name" placeholder="məs. Aysel Məmmədova" />
+      </div>
+      <button class="btn btn-primary" onclick="addStudent()">
+        <span>＋</span> Əlavə et
+      </button>
+
+      <div class="divider"></div>
+
+      <div class="panel-title">Ən Yaxşı Tələbə</div>
+      <button class="btn btn-blue" onclick="fetchTop()">
+        🏆 Tap
+      </button>
+
+      <div id="top-result" style="margin-top:14px;"></div>
+    </aside>
+
+    <!-- Right: student list -->
+    <div class="list-panel">
+      <div class="list-header">
+        <h2>Tələbələr</h2>
+      </div>
+      <div id="student-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+const API = 'http://127.0.0.1:5000';
+
+// ── Toast ──────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 2800);
+}
+
+// ── Fetch all students ─────────────────────────
+async function loadStudents() {
+  try {
+    const res = await fetch(`${API}/students`);
+    const data = await res.json();
+    renderStudents(data);
+    updateStats(data);
+  } catch {
+    toast('Server-ə qoşulmaq olmadı. Flask işləyirmi?', 'error');
+  }
+}
+
+// ── Render student cards ───────────────────────
+function renderStudents(list) {
+  const container = document.getElementById('student-list');
+  if (!list.length) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="icon">🎓</div>
+        <p>Hələ tələbə yoxdur.<br>Sol paneldən əlavə edin.</p>
+      </div>`;
+    return;
+  }
+  container.innerHTML = list.map(s => {
+    const avg = s.average !== null ? s.average.toFixed(1) : '—';
+    const initials = s.name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+    const chips = s.grades.map(g => {
+      const cls = g >= 80 ? 'high' : g >= 60 ? 'mid' : 'low';
+      return `<span class="grade-chip ${cls}">${g}</span>`;
+    }).join('');
+    return `
+    <div class="student-card" id="card-${s.id}">
+      <div class="card-top">
+        <div class="avatar">${initials}</div>
+        <div class="card-info">
+          <div class="card-name">${s.name}</div>
+          <div class="card-id">#${s.id}</div>
+        </div>
+        <div class="card-avg">
+          <div class="avg-number">${avg}</div>
+          <div class="avg-label">orta</div>
+        </div>
+      </div>
+      ${s.grades.length ? `<div class="card-grades">${chips}</div>` : ''}
+      <div class="card-actions">
+        <input class="grade-input" id="grade-${s.id}" type="number"
+               placeholder="Qiymət (0–100)" min="0" max="100" />
+        <button class="btn btn-add-grade" onclick="addGrade(${s.id})">＋ Qiymət</button>
+        <button class="btn btn-ghost" onclick="removeStudent(${s.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Stats bar ──────────────────────────────────
+function updateStats(list) {
+  document.getElementById('stat-total').textContent = list.length;
+  const avgs = list.map(s => s.average).filter(a => a !== null);
+  if (avgs.length) {
+    const overall = (avgs.reduce((a, b) => a + b, 0) / avgs.length).toFixed(1);
+    document.getElementById('stat-avg').textContent = overall;
+  } else {
+    document.getElementById('stat-avg').textContent = '—';
+  }
+}
+
+// ── Add student ────────────────────────────────
+async function addStudent() {
+  const inp = document.getElementById('inp-name');
+  const name = inp.value.trim();
+  if (!name) { toast('Ad daxil edin!', 'error'); inp.focus(); return; }
+
+  try {
+    const res = await fetch(`${API}/students`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+    if (!res.ok) { toast(data.error, 'error'); return; }
+    inp.value = '';
+    toast(`${data.name} əlavə edildi ✓`);
+    loadStudents();
+  } catch { toast('Xəta baş verdi!', 'error'); }
+}
+
+// ── Remove student ─────────────────────────────
+async function removeStudent(id) {
+  try {
+    const res = await fetch(`${API}/students/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) { toast(data.error, 'error'); return; }
+    toast(data.message);
+    loadStudents();
+  } catch { toast('Xəta baş verdi!', 'error'); }
+}
+
+// ── Add grade ──────────────────────────────────
+async function addGrade(id) {
+  const inp = document.getElementById(`grade-${id}`);
+  const grade = inp.value;
+  if (grade === '') { toast('Qiymət daxil edin!', 'error'); return; }
+
+  try {
+    const res = await fetch(`${API}/students/${id}/grades`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ grade: parseFloat(grade) })
+    });
+    const data = await res.json();
+    if (!res.ok) { toast(data.error, 'error'); return; }
+    inp.value = '';
+    toast(`Qiymət əlavə edildi ✓`);
+    loadStudents();
+  } catch { toast('Xəta baş verdi!', 'error'); }
+}
+
+// ── Top student ────────────────────────────────
+async function fetchTop() {
+  try {
+    const res = await fetch(`${API}/students/top`);
+    const data = await res.json();
+    const box = document.getElementById('top-result');
+    if (!res.ok) { box.innerHTML = `<p style="color:var(--muted);font-size:13px">${data.error}</p>`; return; }
+    box.innerHTML = `
+      <div class="trophy-banner">
+        <span class="icon">🏆</span>
+        <div>
+          <div class="tname">${data.name}</div>
+          <div class="tsub">Orta: ${data.average} · ${data.grades.length} qiymət</div>
+        </div>
+      </div>`;
+    document.getElementById('stat-top').textContent = data.average.toFixed(1);
+  } catch { toast('Xəta baş verdi!', 'error'); }
+}
+
+// ── Enter key support ──────────────────────────
+document.getElementById('inp-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addStudent();
+});
+
+// ── Init ───────────────────────────────────────
+loadStudents();
+</script>
+</body>
+</html>
